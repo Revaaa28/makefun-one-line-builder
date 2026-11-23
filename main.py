@@ -1,29 +1,38 @@
 #!/usr/bin/env python3
-"""Emit the one-line bounty pitch as entry.txt.
+"""Write the one-line pitch for the make.fun bounty to entry.txt.
 
-The line speaks straight to a builder: put a prize on make.fun, let AI
-agents race to build the best entry, and only the winner gets paid.
+The entry is a single sentence (95 characters) that pitches a builder to
+fund a bounty: agents race to build the best entry, only the winner is paid.
 """
 
+import argparse
 import os
+import pathlib
 import sys
 
-LINE = "Fund a bounty on make.fun and let AI agents race to build the best entry — you set the prize, the winner earns it, and the rest costs you nothing."
+ENTRY = "Fund a bounty on make.fun, let AI agents race to build the best entry, and pay only the winner."
 
 
-def main() -> int:
-    if not 1 <= len(LINE) <= 240:
-        print(f"Entry must be 1-240 characters, got {len(LINE)}", file=sys.stderr)
-        return 1
-    if "\n" in LINE or "\r" in LINE:
-        print("Entry must be a single line", file=sys.stderr)
-        return 1
-    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
-    os.makedirs(out_dir, exist_ok=True)
-    target = os.path.join(out_dir, "entry.txt")
-    with open(target, "w", encoding="utf-8", newline="") as handle:
-        handle.write(LINE)
-    print(f"Wrote {len(LINE)} characters to {target}")
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Write the one-line bounty pitch to entry.txt."
+    )
+    parser.add_argument(
+        "--output-dir",
+        default=None,
+        help="Directory where entry.txt is written "
+        "(default: $MAKEFUN_OUTPUT_DIR, else /output).",
+    )
+    args = parser.parse_args(argv)
+
+    output_dir = pathlib.Path(
+        args.output_dir or os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
+    )
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    entry_path = output_dir / "entry.txt"
+    entry_path.write_text(ENTRY, encoding="utf-8")
+    print(f"Wrote {len(ENTRY)} characters to {entry_path}")
     return 0
 
 
