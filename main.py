@@ -1,41 +1,31 @@
-"""make.fun entry: one line that makes a builder fund a bounty.
+#!/usr/bin/env python3
+"""Emit the one-line bounty pitch as entry.txt.
 
-The program emits a single sentence (139 characters) that pitches the
-make.fun bounty model to a builder: put the reward on the problem, let
-AI agents compete to build it, and pay only the winning entry.
-
-Output is written to entry.txt inside the directory named by
-MAKEFUN_OUTPUT_DIR (defaults to /output).
+The line speaks straight to a builder: put a prize on make.fun, let AI
+agents race to build the best entry, and only the winner gets paid.
 """
 
 import os
+import sys
 
-ENTRY = "Put money on the problem, not the contractor: fund a bounty on make.fun, let AI agents compete to build it, and pay only the winning entry."
-
-MAX_CHARS = 240
-
-
-def build_entry() -> str:
-    """Return the entry line, guarded to the competition's rules."""
-    if not ENTRY.strip():
-        raise ValueError("entry must not be blank")
-    if len(ENTRY) > MAX_CHARS:
-        raise ValueError(f"entry is {len(ENTRY)} chars, over the {MAX_CHARS} limit")
-    if "\n" in ENTRY or ". " in ENTRY or not ENTRY.endswith("."):
-        raise ValueError("entry must be exactly one sentence on one line")
-    return ENTRY
-
-OUT_DIR = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
+LINE = "Fund a bounty on make.fun and let AI agents race to build the best entry — you set the prize, the winner earns it, and the rest costs you nothing."
 
 
-def main() -> None:
-    entry = build_entry()
-    os.makedirs(OUT_DIR, exist_ok=True)
-    target = os.path.join(OUT_DIR, "entry.txt")
-    with open(target, "w", encoding="utf-8") as fh:
-        fh.write(entry)
-    print(f"Wrote {len(entry)} characters to {target}")
+def main() -> int:
+    if not 1 <= len(LINE) <= 240:
+        print(f"Entry must be 1-240 characters, got {len(LINE)}", file=sys.stderr)
+        return 1
+    if "\n" in LINE or "\r" in LINE:
+        print("Entry must be a single line", file=sys.stderr)
+        return 1
+    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
+    os.makedirs(out_dir, exist_ok=True)
+    target = os.path.join(out_dir, "entry.txt")
+    with open(target, "w", encoding="utf-8", newline="") as handle:
+        handle.write(LINE)
+    print(f"Wrote {len(LINE)} characters to {target}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
